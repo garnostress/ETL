@@ -94,7 +94,7 @@ def clean_username(user):
 
 def process_and_upload_data():
     #Обрабатывает и загружает данные, обновляя существующие записи при необходимости.
-    conn = psycopg2.connect(dbname='airflow', user='airflow', password='airflow', host='172.22.0.2')  # Необходимо заполнить данные для подключения
+    conn = psycopg2.connect(dbname='', user='', password='', host='')  # Необходимо заполнить данные для подключения
     create_tables_if_not_exists(conn)
 
     comments = fetch_comments_and_users()
@@ -140,12 +140,6 @@ with DAG(
         task_id='fetch_comments_and_users',
         python_callable=fetch_comments_and_users,
         op_kwargs={'start': 100},  # Начинаем с 100-й записи
-        dag=dag,
-    )
-
-    clean_usernames_task = PythonOperator(
-        task_id='clean_usernames',
-        python_callable=process_and_upload_data,
         dag=dag,
     )
 

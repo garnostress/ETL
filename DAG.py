@@ -58,7 +58,7 @@ def check_api_availability(url="https://dummyjson.com/comments"):
         return False
 
 
-def fetch_comments_and_users(start=100):
+def fetch_comments_and_users(start=100, **kwargs):
     #Загружает данные о комментариях и пользователях, начиная с указанной записи.
     all_comments = []
 
@@ -84,7 +84,7 @@ def fetch_comments_and_users(start=100):
         else:
             logger.error(f"Ошибка при загрузке комментариев: {response.status_code}")
             break
-
+    logger.info(f"Возвращаем {len(all_comments)} комментариев")
     return all_comments
 
 def clean_username(user):
@@ -92,12 +92,14 @@ def clean_username(user):
     user['username'] = re.sub(r'[^a-zA-Z1]', '', user['username'])
     return user
 
-def process_and_upload_data():
+def process_and_upload_data(**kwargs):
+    ti = kwargs['ti']
+    comments = ti.xcom_pull(task_ids='fetch_comments_and_users')
+    logger.info(f"Получено {len(comments)} комментариев для обработки")
     #Обрабатывает и загружает данные, обновляя существующие записи при необходимости.
     conn = psycopg2.connect(dbname='', user='', password='', host='')  # Необходимо заполнить данные для подключения
     create_tables_if_not_exists(conn)
 
-    comments = fetch_comments_and_users()
     with conn.cursor() as cur:
         for comment in comments:
             comment['user'] = clean_username(comment['user'])
